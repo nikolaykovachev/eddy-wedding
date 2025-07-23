@@ -1,67 +1,93 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Wedding Gallery</title>
+  <title>Wedding Photo Upload & Gallery</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin: 2rem; }
-    img { max-width: 150px; margin: 10px; border-radius: 10px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #gallery img { max-width: 200px; margin: 10px; border-radius: 8px; }
+    #gallery { display: flex; flex-wrap: wrap; }
+    .filter { margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <h1>📸 Upload Your Wedding Photo</h1>
+  <h1>Wedding Gallery</h1>
+  <p id="uploaderInfo"></p>
   <input type="file" id="fileInput" multiple />
-  <button onclick="upload()">Качи</button>
+  <button onclick="upload()">Upload</button>
   <p id="status"></p>
 
-  <h2>Галерия:</h2>
+  <div class="filter">
+    <label for="nameFilter">Filter by name:</label>
+    <select id="nameFilter" onchange="filterImages()">
+      <option value="">All</option>
+    </select>
+  </div>
+
   <div id="gallery"></div>
 
-  <script>
+<script>
+  let uploaderName = "";
 
-function upload() {
-  const files = document.getElementById("fileInput").files;
-  if (!files.length) return alert("Please select at least one file.");
-
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxNt9g0GtZzy1L--nbXPumB_onexm0U-PDN6MbUs5iw7TW-ttCVdJJnHIdsMhKaQt2S/exec"; // replace with your Apps Script URL
-  const status = document.getElementById("status");
-  status.textContent = `Uploading ${files.length} files...`;
-
-  let uploadedCount = 0;
-  let errors = 0;
-
-  function uploadSingleFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = function () {
-        const base64 = reader.result.split(",")[1];
-        fetch(scriptURL, {
-          method: "POST",
-          body: JSON.stringify({
-            name: file.name,
-            mimeType: file.type,
-            base64: base64,
-          }),
-          headers: {
-            "Content-Type": "text/plain",
-          },
-        })
-          .then((res) => res.text())
-          .then((id) => {
-            if (id.startsWith("Error")) {
-              reject(id);
-            } else {
-              resolve(id);
-            }
-          })
-          .catch((err) => reject(err));
-      };
-      reader.readAsDataURL(file);
-    });
+  function getUserName() {
+    uploaderName = localStorage.getItem("uploaderName");
+    if (!uploaderName) {
+      uploaderName = prompt("Please enter your name to upload and view your photos:");
+      if (uploaderName) {
+        uploaderName = uploaderName.trim();
+        localStorage.setItem("uploaderName", uploaderName);
+      } else {
+        alert("Name is required to continue.");
+        getUserName(); // re-prompt
+      }
+    }
+    document.getElementById("uploaderInfo").textContent = "Logged in as: " + uploaderName;
   }
 
-  // Upload files sequentially to avoid spamming server
-  (async () => {
+  async function upload() {
+    const files = document.getElementById("fileInput").files;
+    const status = document.getElementById("status");
+
+    if (!files.length) return alert("Please select at least one file.");
+
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwl2vTikJ8CnLWlpfwHt56rzaPe6X06yiFmN7bcq7w6V54AlBXcTu_UTYtCVNovgUn5/exec"; // Replace with your Apps Script exec URL
+
+    status.textContent = `Uploading ${files.length} files...`;
+
+    let uploadedCount = 0;
+    let errors = 0;
+
+    function uploadSingleFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+          const base64 = reader.result.split(",")[1];
+          const timestamp = Date.now();
+          const newFileName = `${uploaderName}_${timestamp}_${file.name}`;
+
+          fetch(scriptURL, {
+            method: "POST",
+            body: JSON.stringify({
+              name: newFileName,
+              mimeType: file.type,
+              base64: base64,
+            }),
+            headers: {
+              "Content-Type": "text/plain",
+            },
+          })
+            .then((res) => res.text())
+            .then((id) => {
+              if (id.startsWith("Error")) reject(id);
+              else resolve(id);
+            })
+            .catch((err) => reject(err));
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
     for (const file of files) {
       try {
         await uploadSingleFile(file);
@@ -72,27 +98,67 @@ function upload() {
         errors++;
       }
     }
+
     status.textContent =
       errors === 0
         ? `All ${uploadedCount} files uploaded successfully!`
         : `Uploaded ${uploadedCount} files with ${errors} errors.`;
-  })();
-}
 
-    function loadGalleryIframe() {
-    const container = document.getElementById("gallery");
-
-
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://drive.google.com/embeddedfolderview?id=1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS#grid`;
-    iframe.style.width = "100%";
-    iframe.style.height = "600px";
-    iframe.style.border = "none";
-
-    container.appendChild(iframe);
+    loadGallery();
   }
 
-    window.onload = loadGalleryIframe;
-  </script>
+  async function loadGallery() {
+    const folderId = "1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS"; // Replace with your Drive folder ID
+    const apiKey = "AIzaSyC-I2VRGkjNaj6nm7kXVR6MeDxL49OBBAY"; // Replace with your Google API key
+    const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${apiKey}&fields=files(id,name,mimeType)`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+    const gallery = document.getElementById("gallery");
+    const nameFilter = document.getElementById("nameFilter");
+
+    gallery.innerHTML = "";
+    nameFilter.innerHTML = "<option value=''>All</option>";
+
+    const nameSet = new Set();
+
+    data.files.forEach(file => {
+      const nameMatch = file.name.match(/^([^_]+)_/);
+      if (nameMatch) nameSet.add(nameMatch[1]);
+    });
+
+    [...nameSet].sort().forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      nameFilter.appendChild(opt);
+    });
+
+    window.allImages = data.files;
+    filterImages();
+  }
+
+  function filterImages() {
+    const selected = document.getElementById("nameFilter").value;
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "";
+
+    const files = selected
+      ? window.allImages.filter(f => f.name.startsWith(selected + "_"))
+      : window.allImages;
+
+    files.forEach(file => {
+      const img = document.createElement("img");
+      img.src = `https://drive.google.com/uc?export=view&id=${file.id}`;
+      img.alt = file.name;
+      gallery.appendChild(img);
+    });
+  }
+
+  window.onload = function () {
+    getUserName();
+    loadGallery();
+  };
+</script>
 </body>
 </html>
