@@ -1,185 +1,94 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Wedding Upload & Gallery</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wedding Gallery</title>
   <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
-    }
-    img, video {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .file-item {
-      margin-bottom: 20px;
-    }
-    #gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 15px;
-    }
-    button, input[type="file"] {
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 16px;
-      width: 100%;
-      max-width: 300px;
-    }
-    .pagination {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-    .pagination button {
-      padding: 5px 10px;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 1rem; }
+    h1 { text-align: center; }
+    #gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 1rem; }
+    .file-item { overflow: hidden; word-break: break-word; }
+    .file-item img, .file-item video { width: 100%; height: auto; border-radius: 8px; }
+    .filter-bar { margin-bottom: 1rem; text-align: center; }
+    .filter-bar input { padding: 0.5rem; width: 200px; }
+    .pagination { text-align: center; margin-top: 1rem; }
+    .pagination button { padding: 0.5rem 1rem; margin: 0 5px; }
   </style>
 </head>
 <body>
-  <h1>📸 Качете вашите сватбени снимки или видеа</h1>
-  <input type="file" id="fileInput" multiple>Избери файлове</input><br>
-  <button onclick="upload()">Качи</button>
-  <p id="status"></p>
-
-  <h2>Галерия:</h2>
-  <div id="gallery"></div>
+  <h1>Wedding Gallery</h1>
+  <div class="filter-bar">
+    <input type="text" id="filterInput" placeholder="Filter by name..." oninput="renderGallery()" />
+  </div>
+  <div id="gallery">Loading...</div>
   <div class="pagination">
-    <button onclick="prevPage()">Предишна</button>
-    <span id="pageNum">Страница 1</span>
-    <button onclick="nextPage()">Следваща</button>
+    <button onclick="prevPage()">Prev</button>
+    <span id="pageIndicator"></span>
+    <button onclick="nextPage()">Next</button>
   </div>
 
   <script>
-    let uploaderName = "";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxUXj0dRkue46V6ID84XEHNKB-Jt2mizJmA7l2YqihBygU1JEG_w_38-Yro66EUbjs3/exec";
-    let files = [];
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwyo_YDRD9oLvCTXRIyPMCzcKrQ3YkUvQC2VGImnJmuXrCqMT8aPiC4mAo8DEKR2JJk/exec";
+    let allFiles = [];
+    let filteredFiles = [];
     let currentPage = 1;
-    const filesPerPage = 40;
+    const pageSize = 20;
 
-    function getUserName() {
-      uploaderName = localStorage.getItem("uploaderName");
-      if (!uploaderName) {
-        uploaderName = prompt("Твоето име:");
-        if (uploaderName) {
-          uploaderName = uploaderName.trim();
-          localStorage.setItem("uploaderName", uploaderName);
-        } else {
-          alert("Името е задължително.");
-          getUserName();
-        }
-      }
+    async function fetchFiles() {
+      const res = await fetch(scriptURL + "?list=true");
+      const data = await res.json();
+      allFiles = data;
+      renderGallery();
     }
 
-    async function upload() {
-      const fileInput = document.getElementById("fileInput");
-      const status = document.getElementById("status");
+    function renderGallery() {
+      const gallery = document.getElementById("gallery");
+      const filterValue = document.getElementById("filterInput").value.toLowerCase();
+      filteredFiles = allFiles.filter(file => file.name.toLowerCase().includes(filterValue));
+      
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const paginated = filteredFiles.slice(start, end);
 
-      if (!fileInput.files.length) {
-        alert("Моля избери файл.");
+      document.getElementById("pageIndicator").textContent = `Page ${currentPage} of ${Math.ceil(filteredFiles.length / pageSize)}`;
+
+      if (!paginated.length) {
+        gallery.innerHTML = "<p>No files to display.</p>";
         return;
       }
 
-      status.textContent = "Качване...";
-      for (const file of fileInput.files) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64 = reader.result.split(",")[1];
-          const newName = `${uploaderName}_${Date.now()}_${file.name}`;
-
-          const res = await fetch(scriptURL, {
-            method: "POST",
-            body: JSON.stringify({
-              name: newName,
-              mimeType: file.type,
-              base64: base64
-            }),
-            headers: { "Content-Type": "text/plain" }
-          });
-
-          const result = await res.text();
-          console.log("Upload result:", result);
-          loadGallery();
-        };
-        reader.readAsDataURL(file);
-      }
-
-      status.textContent = "Качването успешно.";
-    }
-
-    async function loadGallery() {
-      const res = await fetch(`${scriptURL}?list=true`);
-      const gallery = document.getElementById("gallery");
-      gallery.innerHTML = "Зареждане на снимките...";
-      const allFiles = await res.json();
-
-      files = allFiles.filter(f => f.name.startsWith(uploaderName + "_"));
-      currentPage = 1;
-      renderPage();
-    }
-
-    function renderPage() {
-      const gallery = document.getElementById("gallery");
       gallery.innerHTML = "";
-
-      const start = (currentPage - 1) * filesPerPage;
-      const end = start + filesPerPage;
-      const pageFiles = files.slice(start, end);
-
-      pageFiles.forEach(file => {
-        const container = document.createElement("div");
-        container.className = "file-item";
-
+      paginated.forEach(file => {
+        const div = document.createElement("div");
+        div.className = "file-item";
         if (file.mimeType.startsWith("image/")) {
-          const img = document.createElement("img");
-          img.src = file.url;
-          img.alt = file.name;
-          container.appendChild(img);
+          div.innerHTML = `<img src="${file.url}" alt="${file.name}" />`;
         } else if (file.mimeType.startsWith("video/")) {
-          const video = document.createElement("video");
-          video.src = file.url;
-          video.controls = true;
-          container.appendChild(video);
+          div.innerHTML = `<video controls src="${file.url}"></video>`;
         } else {
-          const link = document.createElement("a");
-          link.href = file.url;
-          link.textContent = file.name;
-          link.target = "_blank";
-          container.appendChild(link);
+          div.innerHTML = `<a href="${file.url}" target="_blank">${file.name}</a>`;
         }
-
-        gallery.appendChild(container);
+        gallery.appendChild(div);
       });
-
-      document.getElementById("pageNum").textContent = `Страница ${currentPage}`;
     }
 
     function nextPage() {
-      if (currentPage * filesPerPage < files.length) {
+      if (currentPage < Math.ceil(filteredFiles.length / pageSize)) {
         currentPage++;
-        renderPage();
+        renderGallery();
       }
     }
 
     function prevPage() {
       if (currentPage > 1) {
         currentPage--;
-        renderPage();
+        renderGallery();
       }
     }
 
-    window.onload = () => {
-      getUserName();
-      loadGallery();
-    };
+    fetchFiles();
   </script>
 </body>
 </html>
