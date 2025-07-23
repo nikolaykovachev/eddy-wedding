@@ -16,7 +16,7 @@
 
         h1 {
           text-align: justify;
-          font-size: 1.2rem;
+          font-size: 1.4rem;
           margin-bottom: 0.2rem;
         }
     div {
@@ -44,6 +44,9 @@
     cursor: pointer;
     margin-top: 5px;
     margin: 0.8rem auto 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     }
 
     button:hover {
@@ -58,11 +61,14 @@ iframe {
 </head>
 
 <body>
-  <h1>📸 Качете вашите сватбени снимки или видеа</h1>
+  <h1>📸 Качете вашите сватбени снимки или видеа от сватбата на Еда и Месут Варкал</h1>
   <input type="file" id="fileInput" multiple />
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
-
+  <p>Инструкции:</p>
+  <p>1. Натисни бутона избор на файлове</p>
+  <p>2. Маркирай снимките и видеата</p>
+  <p>3. Натисни бутона Качи</p>
   <h2>Галерия:</h2>
   <div id="gallery"></div>
 
