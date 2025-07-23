@@ -45,8 +45,8 @@
   </style>
 </head>
 <body>
-  <h2>Избери снимки и видеа</h2>
-  <input type="file" id="fileInput" multiple><br>
+  <h1>📸 Качете вашите сватбени снимки или видеа</h1>
+  <input type="file" id="fileInput" multiple>Избери файлове</input><br>
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
@@ -60,7 +60,7 @@
 
   <script>
     let uploaderName = "";
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzFlPZ-9HZvwzvyBIMrw5dVZqzL_2GXWp_xV_6gsQXKUzMJr1rhBJpZTJRUcaaUrdCu/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwsiTZJLEDSFVnF_xIghA4ygZqlxjgWYl54GBaPZ7F_NtxliOB6vB01269ph25zlpf7/exec";
     let files = [];
     let currentPage = 1;
     const filesPerPage = 40;
@@ -84,7 +84,7 @@
       const status = document.getElementById("status");
 
       if (!fileInput.files.length) {
-        alert("Please select files.");
+        alert("Моля избери файл.");
         return;
       }
 
@@ -156,7 +156,7 @@
         gallery.appendChild(container);
       });
 
-      document.getElementById("pageNum").textContent = `Page ${currentPage}`;
+      document.getElementById("pageNum").textContent = `Страница ${currentPage}`;
     }
 
     function nextPage() {
