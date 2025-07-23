@@ -14,7 +14,7 @@
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Галерия 7</h2>
+  <h2>Галерия 8</h2>
   <div id="gallery"></div>
 
   <script>
@@ -46,7 +46,7 @@
         .then(id => {
           if (id.startsWith("Error")) throw new Error(id);
           document.getElementById("status").textContent = "Uploaded!";
-          loadGallery();
+          loadGalleryIframe();
         })
         .catch(err => {
           console.error(err);
@@ -57,14 +57,24 @@
       reader.readAsDataURL(file);
     }
 
-    function loadGallery() {
-      <iframe 
-  src="https://drive.google.com/embeddedfolderview?id=${folderId}#grid"
-  style="width:100%; height:600px; border:none;">
-</iframe>
+    function loadGalleryIframe() {
+    const container = document.getElementById("galleryContainer");
+
+    if (!folderId) {
+      container.innerHTML = "<p>No folder ID found in URL.</p>";
+      return;
     }
 
-    loadGallery();
+    const iframe = document.createElement("iframe");
+    iframe.src = `https://drive.google.com/embeddedfolderview?id=1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS#grid`;
+    iframe.style.width = "100%";
+    iframe.style.height = "600px";
+    iframe.style.border = "none";
+
+    container.appendChild(iframe);
+  }
+
+    window.onload = loadGalleryIframe;
   </script>
 </body>
 </html>
