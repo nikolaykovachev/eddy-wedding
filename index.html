@@ -10,52 +10,74 @@
 </head>
 <body>
   <h1>📸 Upload Your Wedding Photo</h1>
-  <input type="file" id="fileInput" accept="image/*" />
+  <input type="file" id="fileInput" multiple />
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Галерия 9</h2>
+  <h2>Галерия:</h2>
   <div id="gallery"></div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxNt9g0GtZzy1L--nbXPumB_onexm0U-PDN6MbUs5iw7TW-ttCVdJJnHIdsMhKaQt2S/exec"; // ← Replace
-    const folderId = "1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS";        // ← Replace
-    const apiKey = "AIzaSyC-I2VRGkjNaj6nm7kXVR6MeDxL49OBBAY";     // ← Replace
 
-    function upload() {
-      const fileInput = document.getElementById("fileInput");
-      const file = fileInput.files[0];
-      if (!file) return alert("Please select a file.");
-    
+function upload() {
+  const files = document.getElementById("fileInput").files;
+  if (!files.length) return alert("Please select at least one file.");
+
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxNt9g0GtZzy1L--nbXPumB_onexm0U-PDN6MbUs5iw7TW-ttCVdJJnHIdsMhKaQt2S/exec"; // replace with your Apps Script URL
+  const status = document.getElementById("status");
+  status.textContent = `Uploading ${files.length} files...`;
+
+  let uploadedCount = 0;
+  let errors = 0;
+
+  function uploadSingleFile(file) {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = function () {
         const base64 = reader.result.split(",")[1];
-    
         fetch(scriptURL, {
           method: "POST",
           body: JSON.stringify({
             name: file.name,
             mimeType: file.type,
-            base64: base64
+            base64: base64,
           }),
           headers: {
-            "Content-Type": "text/plain" // avoid CORS preflight
-          }
+            "Content-Type": "text/plain",
+          },
         })
-        .then(res => res.text())
-        .then(id => {
-          if (id.startsWith("Error")) throw new Error(id);
-          document.getElementById("status").textContent = "Uploaded!";
-          loadGalleryIframe();
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById("status").textContent = "Upload failed.";
-        });
+          .then((res) => res.text())
+          .then((id) => {
+            if (id.startsWith("Error")) {
+              reject(id);
+            } else {
+              resolve(id);
+            }
+          })
+          .catch((err) => reject(err));
       };
-    
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Upload files sequentially to avoid spamming server
+  (async () => {
+    for (const file of files) {
+      try {
+        await uploadSingleFile(file);
+        uploadedCount++;
+        status.textContent = `Uploaded ${uploadedCount} of ${files.length} files...`;
+      } catch (err) {
+        console.error("Upload failed for", file.name, err);
+        errors++;
+      }
     }
+    status.textContent =
+      errors === 0
+        ? `All ${uploadedCount} files uploaded successfully!`
+        : `Uploaded ${uploadedCount} files with ${errors} errors.`;
+  })();
+}
 
     function loadGalleryIframe() {
     const container = document.getElementById("gallery");
