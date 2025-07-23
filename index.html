@@ -37,6 +37,7 @@
     border-radius: 8px;
     cursor: pointer;
     margin-top: 10px;
+    margin: 1rem auto 0 auto;
     }
     
     button:hover {
@@ -108,7 +109,7 @@ function upload() {
       try {
         await uploadSingleFile(file);
         uploadedCount++;
-        status.textContent = `Качени ${uploadedCount} от ${files.length} files...`;
+        status.textContent = `Качени ${uploadedCount} от ${files.length} файлове...`;
       } catch (err) {
         console.error("Грешка при качване на ", file.name, err);
         errors++;
@@ -119,7 +120,7 @@ function upload() {
         ? `Всички ${uploadedCount} файлове са успешно качени!`
         : `Качени ${uploadedCount} файлове с ${errors} грепка.`;
   })();
-  loadGalleryIframe()
+  loadGalleryIframe();
 }
 
     function loadGalleryIframe() {
@@ -127,6 +128,7 @@ function upload() {
 
 
     const iframe = document.createElement("iframe");
+    iframe.id = "galleryFrame";
     iframe.src = `https://drive.google.com/embeddedfolderview?id=1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS#grid`;
     iframe.allowFullscreen = true;
     iframe.style.width = "100%";
