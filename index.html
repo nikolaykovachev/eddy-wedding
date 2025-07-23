@@ -1,164 +1,182 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Wedding Photo Upload & Gallery</title>
+  <title>Wedding Upload & Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #gallery img { max-width: 200px; margin: 10px; border-radius: 8px; }
-    #gallery { display: flex; flex-wrap: wrap; }
-    .filter { margin-bottom: 20px; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    img, video {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .file-item {
+      margin-bottom: 20px;
+    }
+    #gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    button, input[type="file"] {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      max-width: 300px;
+    }
+    .pagination {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .pagination button {
+      padding: 5px 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>Wedding Gallery</h1>
-  <p id="uploaderInfo"></p>
-  <input type="file" id="fileInput" multiple />
-  <button onclick="upload()">Upload</button>
+  <h2>Избери снимки и видеа</h2>
+  <input type="file" id="fileInput" multiple><br>
+  <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <div class="filter">
-    <label for="nameFilter">Filter by name:</label>
-    <select id="nameFilter" onchange="filterImages()">
-      <option value="">All</option>
-    </select>
+  <h2>Галерия:</h2>
+  <div id="gallery"></div>
+  <div class="pagination">
+    <button onclick="prevPage()">Предишна</button>
+    <span id="pageNum">Страница 1</span>
+    <button onclick="nextPage()">Следваща</button>
   </div>
 
-  <div id="gallery"></div>
+  <script>
+    let uploaderName = "";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzFlPZ-9HZvwzvyBIMrw5dVZqzL_2GXWp_xV_6gsQXKUzMJr1rhBJpZTJRUcaaUrdCu/exec";
+    let files = [];
+    let currentPage = 1;
+    const filesPerPage = 40;
 
-<script>
-  let uploaderName = "";
-
-  function getUserName() {
-    uploaderName = localStorage.getItem("uploaderName");
-    if (!uploaderName) {
-      uploaderName = prompt("Please enter your name to upload and view your photos:");
-      if (uploaderName) {
-        uploaderName = uploaderName.trim();
-        localStorage.setItem("uploaderName", uploaderName);
-      } else {
-        alert("Name is required to continue.");
-        getUserName(); // re-prompt
+    function getUserName() {
+      uploaderName = localStorage.getItem("uploaderName");
+      if (!uploaderName) {
+        uploaderName = prompt("Твоето име:");
+        if (uploaderName) {
+          uploaderName = uploaderName.trim();
+          localStorage.setItem("uploaderName", uploaderName);
+        } else {
+          alert("Името е задължително.");
+          getUserName();
+        }
       }
     }
-    document.getElementById("uploaderInfo").textContent = "Logged in as: " + uploaderName;
-  }
 
-  async function upload() {
-    const files = document.getElementById("fileInput").files;
-    const status = document.getElementById("status");
+    async function upload() {
+      const fileInput = document.getElementById("fileInput");
+      const status = document.getElementById("status");
 
-    if (!files.length) return alert("Please select at least one file.");
+      if (!fileInput.files.length) {
+        alert("Please select files.");
+        return;
+      }
 
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwl2vTikJ8CnLWlpfwHt56rzaPe6X06yiFmN7bcq7w6V54AlBXcTu_UTYtCVNovgUn5/exec"; // Replace with your Apps Script exec URL
-
-    status.textContent = `Uploading ${files.length} files...`;
-
-    let uploadedCount = 0;
-    let errors = 0;
-
-    function uploadSingleFile(file) {
-      return new Promise((resolve, reject) => {
+      status.textContent = "Качване...";
+      for (const file of fileInput.files) {
         const reader = new FileReader();
-        reader.onloadend = function () {
+        reader.onloadend = async () => {
           const base64 = reader.result.split(",")[1];
-          const timestamp = Date.now();
-          const newFileName = `${uploaderName}_${timestamp}_${file.name}`;
+          const newName = `${uploaderName}_${Date.now()}_${file.name}`;
 
-          fetch(scriptURL, {
+          const res = await fetch(scriptURL, {
             method: "POST",
             body: JSON.stringify({
-              name: newFileName,
+              name: newName,
               mimeType: file.type,
-              base64: base64,
+              base64: base64
             }),
-            headers: {
-              "Content-Type": "text/plain",
-            },
-          })
-            .then((res) => res.text())
-            .then((id) => {
-              if (id.startsWith("Error")) reject(id);
-              else resolve(id);
-            })
-            .catch((err) => reject(err));
+            headers: { "Content-Type": "text/plain" }
+          });
+
+          const result = await res.text();
+          console.log("Upload result:", result);
+          loadGallery();
         };
         reader.readAsDataURL(file);
-      });
+      }
+
+      status.textContent = "Качването успешно.";
     }
 
-    for (const file of files) {
-      try {
-        await uploadSingleFile(file);
-        uploadedCount++;
-        status.textContent = `Uploaded ${uploadedCount} of ${files.length} files...`;
-      } catch (err) {
-        console.error("Upload failed for", file.name, err);
-        errors++;
+    async function loadGallery() {
+      const res = await fetch(`${scriptURL}?list=true`);
+      const allFiles = await res.json();
+
+      files = allFiles.filter(f => f.name.startsWith(uploaderName + "_"));
+      currentPage = 1;
+      renderPage();
+    }
+
+    function renderPage() {
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      const start = (currentPage - 1) * filesPerPage;
+      const end = start + filesPerPage;
+      const pageFiles = files.slice(start, end);
+
+      pageFiles.forEach(file => {
+        const container = document.createElement("div");
+        container.className = "file-item";
+
+        if (file.mimeType.startsWith("image/")) {
+          const img = document.createElement("img");
+          img.src = `${scriptURL}?id=${file.id}`;
+          container.appendChild(img);
+        } else if (file.mimeType.startsWith("video/")) {
+          const video = document.createElement("video");
+          video.src = `${scriptURL}?id=${file.id}`;
+          video.controls = true;
+          container.appendChild(video);
+        } else {
+          const link = document.createElement("a");
+          link.href = `${scriptURL}?id=${file.id}`;
+          link.textContent = file.name;
+          link.target = "_blank";
+          container.appendChild(link);
+        }
+
+        gallery.appendChild(container);
+      });
+
+      document.getElementById("pageNum").textContent = `Page ${currentPage}`;
+    }
+
+    function nextPage() {
+      if (currentPage * filesPerPage < files.length) {
+        currentPage++;
+        renderPage();
       }
     }
 
-    status.textContent =
-      errors === 0
-        ? `All ${uploadedCount} files uploaded successfully!`
-        : `Uploaded ${uploadedCount} files with ${errors} errors.`;
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderPage();
+      }
+    }
 
-    loadGallery();
-  }
-
-  async function loadGallery() {
-    const folderId = "1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS"; // Replace with your Drive folder ID
-    const apiKey = "AIzaSyC-I2VRGkjNaj6nm7kXVR6MeDxL49OBBAY"; // Replace with your Google API key
-    const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&key=${apiKey}&fields=files(id,name,mimeType)`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-    const gallery = document.getElementById("gallery");
-    const nameFilter = document.getElementById("nameFilter");
-
-    gallery.innerHTML = "";
-    nameFilter.innerHTML = "<option value=''>All</option>";
-
-    const nameSet = new Set();
-
-    data.files.forEach(file => {
-      const nameMatch = file.name.match(/^([^_]+)_/);
-      if (nameMatch) nameSet.add(nameMatch[1]);
-    });
-
-    [...nameSet].sort().forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      nameFilter.appendChild(opt);
-    });
-
-    window.allImages = data.files;
-    filterImages();
-  }
-
-  function filterImages() {
-    const selected = document.getElementById("nameFilter").value;
-    const gallery = document.getElementById("gallery");
-    gallery.innerHTML = "";
-
-    const files = selected
-      ? window.allImages.filter(f => f.name.startsWith(selected + "_"))
-      : window.allImages;
-
-    files.forEach(file => {
-      const img = document.createElement("img");
-      img.src = `https://drive.google.com/uc?export=view&id=${file.id}`;
-      img.alt = file.name;
-      gallery.appendChild(img);
-    });
-  }
-
-  window.onload = function () {
-    getUserName();
-    loadGallery();
-  };
-</script>
+    window.onload = () => {
+      getUserName();
+      loadGallery();
+    };
+  </script>
 </body>
 </html>
