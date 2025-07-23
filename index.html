@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wedding Photo Upload</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    #gallery img { width: 150px; margin: 10px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <h1>📸 Share Your Wedding Photos</h1>
+
+  <form id="uploadForm">
+    <input type="file" id="fileInput" accept="image/*" required />
+    <br><br>
+    <button type="submit">Upload</button>
+  </form>
+
+  <p id="status"></p>
+
+  <hr/>
+  <h2>📷 Gallery</h2>
+  <div id="gallery"></div>
+
+  <script>
+    const uploadUrl = "https://script.google.com/macros/s/AKfycbx_Ps_oYSfLcGYn1VtsU9CHE16GMz6kESmcbrrBTqT9NUjG0YC8wuJuNpQAwndUD6rs/exec";
+
+    document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            file: reader.result,
+            filename: file.name,
+            mimeType: file.type
+          })
+        })
+        .then(res => res.text())
+        .then(text => document.getElementById("status").innerText = "Uploaded!")
+        .catch(err => console.error(err));
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Load images from Google Drive public folder
+    const folderId = "Wedding";
+    fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType contains 'image/'&key=AIzaSyCBoV8Nc-DLxKfREtF_Na-NHt_T4676PfI`)
+      .then(res => res.json())
+      .then(data => {
+        const gallery = document.getElementById("gallery");
+        data.files.forEach(file => {
+          const img = document.createElement("img");
+          img.src = `https://drive.google.com/uc?id=${file.id}`;
+          gallery.appendChild(img);
+        });
+      });
+  </script>
+</body>
+</html>
