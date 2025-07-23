@@ -1,65 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Сватбена Галерия</title>
   <style>
-        body {
-          font-family: "Segoe UI", sans-serif;
-          margin: 0;
-          padding: 1rem;
-          background: #f5f5f5;
-          font-size: 22px; /* larger base text */
-        }
-        
-        h1 {
-          text-align: center;
-          font-size: 5rem;
-          margin-bottom: 1rem;
-        }
-      input[type="file"],
-      input[type="text"] {
-        padding: 0.75rem;
-        font-size: 3rem;
-        width: 80%;
-        max-width: 400px;
-        margin: 0.5rem auto;
-        display: block;
-        border: 1px solid #ccc;
-        border-radius: 9px;
-      }
-      button {
-    padding: 0.75rem 1.5rem;
-    font-size: 3rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 10px;
-    margin: 1rem auto 0 auto;
+    html, body {
+      margin: 0; 
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      font-size: 22px; /* larger base text */
     }
-    
+
+    body > * {
+      /* Prevent horizontal overflow */
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 5rem;
+      margin: 1rem 0 0.5rem 0;
+      flex-shrink: 0;
+    }
+
+    input[type="file"],
+    input[type="text"] {
+      padding: 0.75rem;
+      font-size: 3rem;
+      width: 80%;
+      max-width: 400px;
+      margin: 0.5rem auto;
+      display: block;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      flex-shrink: 0;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 3rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 1rem auto;
+      flex-shrink: 0;
+      max-width: 400px;
+      width: 80%;
+      display: block;
+    }
+
     button:hover {
       background-color: #0056b3;
     }
+
     #gallery {
-      flex: 1 1 auto;  /* fill remaining space */
-      min-height: 0;   /* important for flexbox scrolling */
-      display: flex;   /* to allow iframe to fill */
-      flex-direction: column;
+      flex: 1 1 auto; /* take remaining space */
+      display: flex;
       margin: 0 1rem 1rem 1rem;
+      min-height: 0; /* necessary for flex scrolling */
     }
-    
+
     #gallery iframe {
-      flex: 1 1 auto;  /* iframe fills the container */
+      flex: 1 1 auto;
       width: 100%;
       height: 100%;
       border: none;
     }
   </style>
 </head>
+
 <body>
   <h1>📸 Качете вашите сватбени снимки или видеа</h1>
   <input type="file" id="fileInput" multiple />
