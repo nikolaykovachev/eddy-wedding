@@ -14,11 +14,11 @@
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Галерия 5</h2>
+  <h2>Галерия 6</h2>
   <div id="gallery"></div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwS4NMkHvQPkQBpM5QPm3zHqAUmI9hxJtNMtzmecH69s1Hbctv_Y4pTA7QaaSGArwq-/exec"; // ← Replace
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxNt9g0GtZzy1L--nbXPumB_onexm0U-PDN6MbUs5iw7TW-ttCVdJJnHIdsMhKaQt2S/exec"; // ← Replace
     const folderId = "1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS";        // ← Replace
     const apiKey = "AIzaSyC-I2VRGkjNaj6nm7kXVR6MeDxL49OBBAY";     // ← Replace
 
@@ -26,17 +26,21 @@
       const fileInput = document.getElementById("fileInput");
       const file = fileInput.files[0];
       if (!file) return alert("Please select a file.");
-  
+    
       const reader = new FileReader();
       reader.onloadend = function () {
-        const base64 = reader.result.split(",")[1]; // get base64 content
-  
+        const base64 = reader.result.split(",")[1];
+    
         fetch(scriptURL, {
           method: "POST",
+          body: JSON.stringify({
+            name: file.name,
+            mimeType: file.type,
+            base64: base64
+          }),
           headers: {
-            "Content-Type": file.type
-          },
-          body: base64
+            "Content-Type": "text/plain" // avoid CORS preflight
+          }
         })
         .then(res => res.text())
         .then(id => {
@@ -49,7 +53,7 @@
           document.getElementById("status").textContent = "Upload failed.";
         });
       };
-  
+    
       reader.readAsDataURL(file);
     }
 
