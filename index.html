@@ -4,8 +4,79 @@
   <meta charset="UTF-8">
   <title>Сватбена Галерия</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin: 2rem; }
-    img { max-width: 150px; margin: 10px; border-radius: 10px; }
+    body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background: #f5f5f5;
+  font-size: 18px; /* larger base text */
+}
+
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+form, .filter-bar, .pagination {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+input[type="file"],
+input[type="text"] {
+  padding: 0.75rem;
+  font-size: 1rem;
+  width: 80%;
+  max-width: 400px;
+  margin: 0.5rem auto;
+  display: block;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#message {
+  text-align: center;
+  color: green;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+#gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.file-item img,
+.file-item video {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.file-item {
+  overflow: hidden;
+  word-break: break-word;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
   </style>
 </head>
 <body>
@@ -90,8 +161,8 @@ function upload() {
     const iframe = document.createElement("iframe");
     iframe.src = `https://drive.google.com/embeddedfolderview?id=1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS#grid`;
     iframe.style.width = "100%";
-    iframe.style.height = "600px";
-    iframe.style.border = "none";
+    iframe.style.height = "100%";
+    iframe.style.border = "2px";
 
     container.appendChild(iframe);
   }
