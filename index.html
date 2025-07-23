@@ -14,7 +14,7 @@
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Галерия 8</h2>
+  <h2>Галерия 9</h2>
   <div id="gallery"></div>
 
   <script>
@@ -58,12 +58,8 @@
     }
 
     function loadGalleryIframe() {
-    const container = document.getElementById("galleryContainer");
+    const container = document.getElementById("gallery");
 
-    if (!folderId) {
-      container.innerHTML = "<p>No folder ID found in URL.</p>";
-      return;
-    }
 
     const iframe = document.createElement("iframe");
     iframe.src = `https://drive.google.com/embeddedfolderview?id=1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS#grid`;
