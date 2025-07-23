@@ -4,8 +4,17 @@
   <meta charset="UTF-8">
   <title>Wedding Gallery</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin: 2rem; }
-    img { max-width: 150px; margin: 10px; border-radius: 10px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 2rem;
+    }
+    img {
+      max-width: 150px;
+      margin: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
@@ -14,7 +23,7 @@
   <button onclick="upload()">Upload</button>
   <p id="status"></p>
 
-  <h2>Gallery New</h2>
+  <h2>Gallery</h2>
   <div id="gallery"></div>
 
   <script>
@@ -26,31 +35,30 @@
       const fileInput = document.getElementById("fileInput");
       const file = fileInput.files[0];
       if (!file) return alert("Please select a file.");
-    
+
       const reader = new FileReader();
-      reader.onload = function () {
-        const base64Data = reader.result.split(",")[1];
-        const contentType = file.type;
-    
+      reader.onloadend = function () {
+        const base64data = reader.result.split(',')[1];
+
         fetch(scriptURL, {
           method: "POST",
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": file.type
           },
-          body: `file=${encodeURIComponent(Utilities.base64Encode(base64Data))}`
+          body: base64data
         })
         .then(res => res.text())
         .then(id => {
           if (id.startsWith("Error")) throw new Error(id);
           document.getElementById("status").textContent = "Uploaded!";
-          loadGallery();
+          loadGallery(); // refresh images
         })
         .catch(err => {
           console.error(err);
           document.getElementById("status").textContent = "Upload failed.";
         });
       };
-    
+
       reader.readAsDataURL(file);
     }
 
