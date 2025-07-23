@@ -43,6 +43,19 @@
     button:hover {
       background-color: #0056b3;
     }
+    #gallery {
+      flex: 1 1 auto;  /* fill remaining space */
+      min-height: 0;   /* important for flexbox scrolling */
+      display: flex;   /* to allow iframe to fill */
+      flex-direction: column;
+      margin: 0 1rem 1rem 1rem;
+    }
+    
+    #gallery iframe {
+      flex: 1 1 auto;  /* iframe fills the container */
+      width: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
