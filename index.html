@@ -14,7 +14,7 @@
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Галерия 3</h2>
+  <h2>Галерия 4</h2>
   <div id="gallery"></div>
 
   <script>
@@ -27,23 +27,30 @@
       const file = fileInput.files[0];
       if (!file) return alert("Please select a file.");
   
-      const formData = new FormData();
-      formData.append("file", file);
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        const base64 = reader.result.split(",")[1]; // get base64 content
   
-      fetch(scriptURL, {
-        method: "POST",
-        body: formData
-      })
-      .then(res => res.text())
-      .then(id => {
-        if (id.startsWith("Error")) throw new Error(id);
-        document.getElementById("status").textContent = "Uploaded!";
-        loadGallery();
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById("status").textContent = "Upload failed.";
-      });
+        fetch(scriptURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": file.type
+          },
+          body: base64
+        })
+        .then(res => res.text())
+        .then(id => {
+          if (id.startsWith("Error")) throw new Error(id);
+          document.getElementById("status").textContent = "Uploaded!";
+          loadGallery();
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("status").textContent = "Upload failed.";
+        });
+      };
+  
+      reader.readAsDataURL(file);
     }
 
     function loadGallery() {
