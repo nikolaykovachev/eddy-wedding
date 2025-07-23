@@ -58,29 +58,10 @@
     }
 
     function loadGallery() {
-      const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&key=${apiKey}&fields=files(id,name,webContentLink)`;
-    
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          const div = document.getElementById("gallery");
-          div.innerHTML = "";
-          if (!data.files || data.files.length === 0) {
-            div.innerHTML = "<p>No images yet.</p>";
-            return;
-          }
-    
-          data.files.forEach(file => {
-            const img = document.createElement("img");
-            img.src = file.webContentLink.replace("&export=download", ""); // Clean link
-            img.alt = file.name;
-            div.appendChild(img);
-          });
-        })
-        .catch(err => {
-          console.error("Gallery error:", err);
-          document.getElementById("gallery").textContent = "Failed to load gallery.";
-        });
+      <iframe 
+  src="https://drive.google.com/embeddedfolderview?id=${folderId}#grid"
+  style="width:100%; height:600px; border:none;">
+</iframe>
     }
 
     loadGallery();
