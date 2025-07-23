@@ -26,16 +26,19 @@
       const fileInput = document.getElementById("fileInput");
       const file = fileInput.files[0];
       if (!file) return alert("Please select a file.");
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      document.getElementById("status").textContent = "Uploading...";
-
-      fetch(scriptURL, {
-        method: "POST",
-        body: formData
-      })
+    
+      const reader = new FileReader();
+      reader.onload = function () {
+        const base64Data = reader.result.split(",")[1];
+        const contentType = file.type;
+    
+        fetch(scriptURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `file=${encodeURIComponent(Utilities.base64Encode(base64Data))}`
+        })
         .then(res => res.text())
         .then(id => {
           if (id.startsWith("Error")) throw new Error(id);
@@ -46,6 +49,9 @@
           console.error(err);
           document.getElementById("status").textContent = "Upload failed.";
         });
+      };
+    
+      reader.readAsDataURL(file);
     }
 
     function loadGallery() {
