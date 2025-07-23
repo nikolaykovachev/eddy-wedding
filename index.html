@@ -2,75 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Wedding Photo Upload</title>
+  <title>Wedding Upload</title>
   <style>
-    body { font-family: sans-serif; padding: 2rem; text-align: center; }
-    input, button { padding: 0.5rem; font-size: 1rem; margin: 1rem; }
+    body { font-family: sans-serif; text-align: center; padding: 2rem; }
     .gallery img { max-width: 150px; margin: 10px; border-radius: 10px; box-shadow: 2px 2px 8px #ccc; }
   </style>
 </head>
 <body>
-  <h1>📸 Upload Your Wedding Photos</h1>
+  <h1>📸 Upload Your Wedding Photo</h1>
   <input type="file" id="fileInput" accept="image/*">
   <button onclick="upload()">Upload</button>
   <p id="status"></p>
 
-  <h2>🖼️ Gallery</h2>
+  <h2>🖼️ Галерия</h2>
   <div id="gallery" class="gallery"></div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzkaVTV-92_d5CYk1VVk_1nR34J7u6CL6GD5qsC1tzlM6TXV-fhwT6Gr3Yn4Vw4jnP0/exec";
+    const uploadUrl = "https://script.google.com/macros/s/AKfycbzkaVTV-92_d5CYk1VVk_1nR34J7u6CL6GD5qsC1tzlM6TXV-fhwT6Gr3Yn4Vw4jnP0/exec";
     const folderId = "1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS";
-    const apiKey = "AIzaSyCBoV8Nc-DLxKfREtF_Na-NHt_T4676PfI";
+    const apiKey = "AIzaSyC-I2VRGkjNaj6nm7kXVR6MeDxL49OBBAY";
 
-    async function upload() {
+    function upload() {
       const file = document.getElementById('fileInput').files[0];
-      if (!file) return alert("Please select a photo.");
-      document.getElementById("status").textContent = "Uploading...";
+      if (!file) return alert("Please select a file");
 
-      const formData = new FormData();
-      formData.append("image", file);
-
-      try {
-        const res = await fetch(scriptURL, { method: "POST", body: formData });
-        const fileId = await res.text();
-        document.getElementById("status").textContent = "Uploaded!";
-        loadGallery();
-      } catch (err) {
-        console.error(err);
-        document.getElementById("status").textContent = "Upload failed.";
-      }
+      const reader = new FileReader();
+      reader.onload = function () {
+        const dataUrl = reader.result.split(',')[1]; // Base64 only
+        fetch(uploadUrl, {
+          method: "POST",
+          body: dataUrl
+        })
+          .then(res => res.text())
+          .then(id => {
+            document.getElementById("status").textContent = "Uploaded!";
+            loadGallery();
+          })
+          .catch(err => {
+            console.error("Upload error:", err);
+            document.getElementById("status").textContent = "Upload failed.";
+          });
+      };
+      reader.readAsDataURL(file);
     }
 
-    async function loadGallery() {
-      const gallery = document.getElementById("gallery");
-      gallery.innerHTML = "Loading...";
+    function loadGallery() {
+      fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&key=${apiKey}&fields=files(id,name)`)
+        .then(res => res.json())
+        .then(data => {
+          const gallery = document.getElementById("gallery");
+          gallery.innerHTML = "";
+          if (!data.files || data.files.length === 0) {
+            gallery.innerHTML = "<p>No images yet.</p>";
+            return;
+          }
 
-      try {
-        const res = await fetch(
-          `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+mimeType+contains+'image/'&key=${apiKey}&fields=files(id,name)`
-        );
-        const data = await res.json();
-
-        if (!data.files || data.files.length === 0) {
-          gallery.innerHTML = "<p>No images uploaded yet.</p>";
-          return;
-        }
-
-        gallery.innerHTML = "";
-        data.files.forEach(file => {
-          const img = document.createElement("img");
-          img.src = `https://drive.google.com/uc?export=view&id=${file.id}`;
-          img.alt = file.name;
-          gallery.appendChild(img);
+          data.files.forEach(file => {
+            const img = document.createElement("img");
+            img.src = `https://drive.google.com/uc?export=view&id=${file.id}`;
+            img.alt = file.name;
+            gallery.appendChild(img);
+          });
+        })
+        .catch(err => {
+          console.error("Gallery error:", err);
+          document.getElementById("gallery").innerHTML = "<p>Failed to load images.</p>";
         });
-      } catch (err) {
-        console.error("Gallery error:", err);
-        gallery.innerHTML = "<p>Failed to load gallery.</p>";
-      }
     }
 
-    // Load on page load
+    // Load gallery on page load
     loadGallery();
   </script>
 </body>
