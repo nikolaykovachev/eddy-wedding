@@ -10,7 +10,10 @@
 </head>
 <body>
   <h1>📸 Качете вашите сватбени снимки или видеа</h1>
-  <input type="file" id="fileInput" multiple />Избери файлове</input>
+  <div>
+    <label for="files" class="btn">Избери файлове</label>
+    <input type="file" id="fileInput" multiple >
+  </div>
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
@@ -25,7 +28,7 @@ function upload() {
 
   const scriptURL = "https://script.google.com/macros/s/AKfycbwyo_YDRD9oLvCTXRIyPMCzcKrQ3YkUvQC2VGImnJmuXrCqMT8aPiC4mAo8DEKR2JJk/exec"; // replace with your Apps Script URL
   const status = document.getElementById("status");
-  status.textContent = `Качване ${files.length} файлове...`;
+  status.textContent = `Качване на ${files.length} файлове...`;
 
   let uploadedCount = 0;
   let errors = 0;
