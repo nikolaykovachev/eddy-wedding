@@ -4,26 +4,17 @@
   <meta charset="UTF-8">
   <title>Wedding Gallery</title>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin: 2rem;
-    }
-    img {
-      max-width: 150px;
-      margin: 10px;
-      border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.2);
-    }
+    body { font-family: sans-serif; text-align: center; margin: 2rem; }
+    img { max-width: 150px; margin: 10px; border-radius: 10px; }
   </style>
 </head>
 <body>
   <h1>📸 Upload Your Wedding Photo</h1>
   <input type="file" id="fileInput" accept="image/*" />
-  <button onclick="upload()">Upload</button>
+  <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Gallery</h2>
+  <h2>Галерия</h2>
   <div id="gallery"></div>
 
   <script>
@@ -36,30 +27,25 @@
       const file = fileInput.files[0];
       if (!file) return alert("Please select a file.");
 
-      const reader = new FileReader();
-      reader.onloadend = function () {
-        const base64data = reader.result.split(',')[1];
+      const formData = new FormData();
+      formData.append("file", file);
 
-        fetch(scriptURL, {
-          method: "POST",
-          headers: {
-            "Content-Type": file.type
-          },
-          body: base64data
-        })
+      document.getElementById("status").textContent = "Uploading...";
+
+      fetch(scriptURL, {
+        method: "POST",
+        body: formData
+      })
         .then(res => res.text())
         .then(id => {
           if (id.startsWith("Error")) throw new Error(id);
           document.getElementById("status").textContent = "Uploaded!";
-          loadGallery(); // refresh images
+          loadGallery();
         })
         .catch(err => {
           console.error(err);
           document.getElementById("status").textContent = "Upload failed.";
         });
-      };
-
-      reader.readAsDataURL(file);
     }
 
     function loadGallery() {
