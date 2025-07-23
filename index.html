@@ -134,7 +134,8 @@ function upload() {
 
     function loadGalleryIframe() {
     const container = document.getElementById("gallery");
-
+    container.innerHTML = "";
+    let iframe = document.getElementById("galleryFrame");
     if(!iframe){
     const iframe = document.createElement("iframe");
     iframe.id = "galleryFrame";
