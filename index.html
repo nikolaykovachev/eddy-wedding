@@ -117,6 +117,8 @@
 
     async function loadGallery() {
       const res = await fetch(`${scriptURL}?list=true`);
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "Зареждане на снимките...";
       const allFiles = await res.json();
 
       files = allFiles.filter(f => f.name.startsWith(uploaderName + "_"));
@@ -138,16 +140,17 @@
 
         if (file.mimeType.startsWith("image/")) {
           const img = document.createElement("img");
-          img.src = `${scriptURL}?id=${file.id}`;
+          img.src = file.url;
+          img.alt = file.name;
           container.appendChild(img);
         } else if (file.mimeType.startsWith("video/")) {
           const video = document.createElement("video");
-          video.src = `${scriptURL}?id=${file.id}`;
+          video.src = file.url;
           video.controls = true;
           container.appendChild(video);
         } else {
           const link = document.createElement("a");
-          link.href = `${scriptURL}?id=${file.id}`;
+          link.href = file.url;
           link.textContent = file.name;
           link.target = "_blank";
           container.appendChild(link);
