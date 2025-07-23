@@ -14,11 +14,11 @@
   <button onclick="upload()">Качи</button>
   <p id="status"></p>
 
-  <h2>Галерия 2</h2>
+  <h2>Галерия 3</h2>
   <div id="gallery"></div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbx6AOj1Uu3bMWJdA2OhhE1zvXJaJB_h1PiAu11s3CmJgfIOM2EjS-k9wD5_L1dDQs0i/exec"; // ← Replace
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx1SwgPx1_J0Rf-3ke-skfuLa1q2j2GnTnB9airWb1VjGBnj_wrVwAtfVcq4Zdq2fIN/exec"; // ← Replace
     const folderId = "1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS";        // ← Replace
     const apiKey = "AIzaSyC-I2VRGkjNaj6nm7kXVR6MeDxL49OBBAY";     // ← Replace
 
@@ -26,26 +26,24 @@
       const fileInput = document.getElementById("fileInput");
       const file = fileInput.files[0];
       if (!file) return alert("Please select a file.");
-
+  
       const formData = new FormData();
       formData.append("file", file);
-
-      document.getElementById("status").textContent = "Uploading...";
-
+  
       fetch(scriptURL, {
         method: "POST",
         body: formData
       })
-        .then(res => res.text())
-        .then(id => {
-          if (id.startsWith("Error")) throw new Error(id);
-          document.getElementById("status").textContent = "Uploaded!";
-          loadGallery();
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById("status").textContent = "Upload failed.";
-        });
+      .then(res => res.text())
+      .then(id => {
+        if (id.startsWith("Error")) throw new Error(id);
+        document.getElementById("status").textContent = "Uploaded!";
+        loadGallery();
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById("status").textContent = "Upload failed.";
+      });
     }
 
     function loadGallery() {
