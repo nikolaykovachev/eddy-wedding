@@ -54,6 +54,7 @@
     #gallery iframe {
       flex: 1 1 auto;  /* iframe fills the container */
       width: 100%;
+      height: 100%;
       border: none;
     }
   </style>
@@ -133,16 +134,15 @@ function upload() {
     function loadGalleryIframe() {
     const container = document.getElementById("gallery");
 
-
+    if(!iframe){
     const iframe = document.createElement("iframe");
     iframe.id = "galleryFrame";
     iframe.src = `https://drive.google.com/embeddedfolderview?id=1Zko3g5J8RbKXYT5sOs5szvZuQZovGlZS#grid`;
     iframe.allowFullscreen = true;
-    iframe.style.width = "100%";
-    iframe.style.height = "100vh";
-    iframe.style.border = "none";
-
     container.appendChild(iframe);
+    } else {
+      iframe.src = iframe.src
+    }
   }
 
     window.onload = loadGalleryIframe;
