@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Сватбена Галерия</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    header {
+      flex-shrink: 0;
+      padding: 1rem;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 .25rem 0;
+      font-size: 2.2rem;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      justify-content: center;
+      align-items: center;
+      margin-top: .25rem;
+    }
+    .btn {
+      display: inline-block;
+      padding: .9rem 1.4rem;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      color: #fff;
+      background: #007bff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+    .btn:hover { background:#0056b3; }
+    .btn.secondary { background: #6c757d; }
+    .btn.secondary:hover { background: #545b62; }
+
+    #gallery {
+      flex: 1 1 auto;          /* take remaining height */
+      min-height: 0;           /* important for flex scrolling */
+      display: flex;
+      padding: 0 1rem 1rem;
+    }
+    #galleryFrame {
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.8rem; }
+      .btn { font-size: 1rem; padding: .8rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Сватбена Галерия</h1>
+    <div class="actions">
+      <!-- Upload: opens OneDrive File Request (no login required) -->
+      <a class="btn" href="https://1drv.ms/f/c/08df893fe96d08fd/EoM2d7UdeGlAtFedqLW-kx0Bn0DQvcEiceyZTCqxlJhwWg?e=cjY6q9" target="_blank" rel="noopener">
+        📤 Качи снимки/видеа
+      </a>
+      <!-- Refresh the gallery iframe -->
+      <button class="btn secondary" type="button" onclick="refreshGallery()">🔄 Обнови галерията</button>
+    </div>
+  </header>
+
+  <div id="gallery">
+    <!-- OneDrive shared/embedded folder -->
+    <iframe
+      id="galleryFrame"
+      src="https://1drv.ms/f/c/08df893fe96d08fd/EoM2d7UdeGlAtFedqLW-kx0Bn0DQvcEiceyZTCqxlJhwWg?e=cjY6q9"
+      allowfullscreen
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    ></iframe>
+  </div>
+
+  <script>
+    function refreshGallery() {
+      const f = document.getElementById('galleryFrame');
+      // Reload in-place without creating a second iframe
+      f.src = f.src;
+    }
+  </script>
+</body>
+</html>
